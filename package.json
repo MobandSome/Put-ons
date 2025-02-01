@@ -2,7 +2,7 @@
   "name": "putons",
   "license": "0BSD",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -10,13 +10,17 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "expo": "~52.0.24",
-    "expo-status-bar": "~2.0.0",
+    "expo": "^52.0.27",
+    "expo-router": "^4.0.17",
+    "expo-status-bar": "~2.0.1",
     "react": "18.3.1",
-    "react-native": "0.76.5"
+    "react-native": "^0.76.6"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "@types/react": "~18.3.12",
+    "@types/react-native": "^0.72.8",
+    "typescript": "^5.3.3"
   },
   "private": true
 }
