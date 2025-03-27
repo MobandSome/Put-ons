@@ -9,6 +9,7 @@ export default function Auth() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [refresh_token, setRefreshToken] = useState('')
+  const [message, setMessage] = useState('')
 
 
 
@@ -56,7 +57,19 @@ export default function Auth() {
   }
 }
 
-  //This makes use of the supabase client to sign up with email and password
+  async function handleGoogleLogin() {
+    setLoading(true)
+    try{
+      const response = await axios.post('http://localhost:3000/redirect/google')
+      console.log(response.data)
+      if (error) Alert.alert(error.message)
+      setLoading(false)
+    }
+    catch (error) {
+      setMessage(`Google login failed: ${error.response?.data?.error || error.message}`);
+    }
+  }
+
   async function signUpWithEmail() {
     setLoading(true)
     const {
@@ -69,6 +82,14 @@ export default function Auth() {
 
     if (error) Alert.alert(error.message)
     if (!session) Alert.alert('Please check your inbox for email verification!')
+    setLoading(false)
+  }
+
+  async function googleLogin() {
+    setLoading(true)
+    const { user, session, error } = await axios.post('http://localhost:3000/redirect/google')
+    
+    if (error) Alert.alert(error.message)
     setLoading(false)
   }
 
@@ -100,6 +121,9 @@ export default function Auth() {
       </View>
       <View style={styles.verticallySpaced}>
         <Button title="Sign up" disabled={loading} onPress={() => signUpWithEmail()} />
+      </View>
+      <View>
+        <Button title="Google Sign in" disabled={loading} onPress= {() => handleGoogleLogin()}></Button>
       </View>
       <View style = {styles.verticallySpaced}>
         <Button title="Sign out" onPress={() => handleLogout()} />

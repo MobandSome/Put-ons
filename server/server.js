@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const bodyParser = require('body-parser');
+const supabase = require('./supabaseCli');
 const app = express();
 const port = 3000;
 
@@ -12,6 +13,8 @@ app.use(express.json());
 app.use(bodyParser.json());
 
 // Supabase URL and anon key from environment variables
+// const supabaseUrl = process.env.SUPABASE_URL;
+// const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
 // Authentication route
 app.post('/login', async (req, res) => {
@@ -108,6 +111,61 @@ app.post('/signUp', async(req, res) => {
   res.status(400).json({ error: error.response?.data || 'Logout failed' });
 }
 });
+
+
+app.post('/redirect/google', async (req, res) => {
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.GOOGLE_REDIRECT_URI}&response_type=code&scope=openid%20email%20profile&access_type=offline&prompt=consent`;
+  res.redirect(authUrl);
+  // res.json({ url: authUrl });
+});
+
+app.post('auth/google/callback', async (req, res) => {
+ try {
+
+  const { code } = req.body;
+  const response = await axios.post('https://oauth2.googleapis.com/token', {
+    code: code,
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    client_secret: process.env.GOOGLE_CLIENT_SECRET,
+    redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+    grant_type: 'authorization_code',
+  });
+
+  const { access_token, refresh_token } = response.data;
+
+  const userInformation = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+    },
+  });
+
+   const userData = userInformation.data;
+
+   const supabaseResponse = await axios.post(`${supabaseUrl}/auth/v1/token?grant_type=google`, {
+     access_token: access_token,
+     refresh_token: refresh_token,
+     email: userData.email,
+     user_id: userData.sub,
+     user_metadata: {
+       full_name: userData.name,
+       avatar_url: userData.picture,
+     },
+   }, {
+     headers: {
+       apikey: supabaseAnonKey,
+       'Authorization': `Bearer ${service_role_key}`,
+       'Content-Type': 'application/json',
+     },
+   });
+
+   res.json({message: 'User authenticated successfully', session: supabaseResponse.data.access_token, userData});
+ }
+ catch(error) {
+  console.error('Google authentication failed:', error.response?.data || error.message);
+   res.status(400).json({ error: error.response?.data || 'Google authentication failed' });
+ }
+}
+)
 
 // Start the backend server
 app.listen(3000, () => {
