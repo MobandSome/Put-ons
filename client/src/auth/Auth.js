@@ -3,6 +3,7 @@ import { Alert, StyleSheet, View } from 'react-native'
 // import { supabase } from '../lib/subaseClient'
 import { Button, Input } from '@rneui/themed'
 import axios from 'axios';
+import * as WebBrowser from 'expo-web-browser';
 
 export default function Auth() {
   const [email, setEmail] = useState('')
@@ -58,9 +59,12 @@ export default function Auth() {
 }
 
   async function handleGoogleLogin() {
+    console.log('google login')
     setLoading(true)
     try{
-      const response = await axios.post('http://localhost:3000/redirect/google')
+      const authUrl = ``;
+      const response = await WebBrowser.openBrowserAsync(authUrl)
+      // const response = await axios.post('http://localhost:3000/redirect/google')
       console.log(response.data)
       if (error) Alert.alert(error.message)
       setLoading(false)

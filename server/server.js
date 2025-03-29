@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const bodyParser = require('body-parser');
-const supabase = require('./supabaseCli');
+// const supabase = require('./supabaseCli');
 const app = express();
 const port = 3000;
 
@@ -13,8 +13,7 @@ app.use(express.json());
 app.use(bodyParser.json());
 
 // Supabase URL and anon key from environment variables
-// const supabaseUrl = process.env.SUPABASE_URL;
-// const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
 
 // Authentication route
 app.post('/login', async (req, res) => {
@@ -113,21 +112,22 @@ app.post('/signUp', async(req, res) => {
 });
 
 
-app.post('/redirect/google', async (req, res) => {
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.GOOGLE_REDIRECT_URI}&response_type=code&scope=openid%20email%20profile&access_type=offline&prompt=consent`;
+app.get('/redirect/google', async (req, res) => {
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_REDIRECT_URI}&response_type=code&scope=openid%20email%20profile&access_type=offline&prompt=consent`;
   res.redirect(authUrl);
   // res.json({ url: authUrl });
 });
 
-app.post('auth/google/callback', async (req, res) => {
+app.get('/auth/google/callback', async (req, res) => {
  try {
 
-  const { code } = req.body;
+  const { code } = req.query;
+
   const response = await axios.post('https://oauth2.googleapis.com/token', {
     code: code,
-    client_id: process.env.GOOGLE_CLIENT_ID,
-    client_secret: process.env.GOOGLE_CLIENT_SECRET,
-    redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+    client_id: GOOGLE_CLIENT_ID,
+    client_secret: GOOGLE_CLIENT_SECRET,
+    redirect_uri: GOOGLE_REDIRECT_URI,
     grant_type: 'authorization_code',
   });
 
@@ -158,6 +158,7 @@ app.post('auth/google/callback', async (req, res) => {
      },
    });
 
+   console.log(supabaseResponse.data);
    res.json({message: 'User authenticated successfully', session: supabaseResponse.data.access_token, userData});
  }
  catch(error) {
